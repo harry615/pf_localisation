@@ -53,10 +53,18 @@ class PFLocaliser(PFLocaliserBase):
 
             scan.ranges = laser_scan
 
+            outside_map = 0
+
             for particle in self.particlecloud.poses:
                 weight = self.sensor_model.get_weight(scan, particle)
+                if not(self.particle_in_map(particle)):
+                    weight = 0
+                    outside_map += 1
                 weights.append(weight)
                 self.particle_weights.append(weight)
+
+            if outside_map > 0.9 * len(weights):
+                self.reinitialization()
 
             total_weight = sum(weights)
             normalized_weights = [w / total_weight for w in weights]
@@ -157,6 +165,11 @@ class PFLocaliser(PFLocaliserBase):
             particle.position.x = 6 * gauss(0, 1)
             particle.position.y = 6 * gauss(0, 1)
 
+            while not(self.particle_in_map(particle)):
+                particle = Pose()
+                particle.position.x = 6 * gauss(0, 1)
+                particle.position.y = 6 * gauss(0, 1)
+
             quat_tf = [0, 1, 0, 0]
             quat_msg = Quaternion(quat_tf[0], quat_tf[1], quat_tf[2], quat_tf[3])
 
@@ -165,7 +178,7 @@ class PFLocaliser(PFLocaliserBase):
             new_particle_cloud.poses.append(particle)
         return new_particle_cloud
 
-    def detect_kidnapping(self, min_weight_threshold=4):
+    def detect_kidnapping(self, min_weight_threshold=2.5):
         if not self.particle_weights:
                 return False
         if self.kidnapping_fixed :
@@ -190,3 +203,8 @@ class PFLocaliser(PFLocaliserBase):
             self.particlecloud = self.reinitialization()
             self.kidnapping_fixed = True
             self.kidnapped = False
+
+    def particle_in_map(self, particle):
+        x = round(particle.position.x / 0.05) + 2000
+        y = round(particle.position.y / 0.05) + 2000
+        return self.occupancy_map.data[int((y * self.occupancy_map.info.width) + x)] == 0
