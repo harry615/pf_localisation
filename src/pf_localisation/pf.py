@@ -78,9 +78,9 @@ class PFLocaliser(PFLocaliserBase):
                         break
 
                 new_particle = Pose()
-                new_particle.position.x = selected_particle.position.x + gauss(0, 0.25)
-                new_particle.position.y = selected_particle.position.y + gauss(0, 0.25)
-                new_particle.orientation = rotateQuaternion(selected_particle.orientation, gauss(0, 0.25))
+                new_particle.position.x = selected_particle.position.x + gauss(0, 0.15)
+                new_particle.position.y = selected_particle.position.y + gauss(0, 0.15)
+                new_particle.orientation = rotateQuaternion(selected_particle.orientation, gauss(0, 0.05))
 
                 new_particle_cloud.poses.append(new_particle)
 
@@ -90,8 +90,8 @@ class PFLocaliser(PFLocaliserBase):
         poses = self.particlecloud.poses
         coordinates = np.array([[p.position.x, p.position.y] for p in poses])
 
-        core_distance = .15
-        core_samples = 50
+        core_distance = .25
+        core_samples = 10
 
         db = DBSCAN(eps=core_distance, min_samples=core_samples).fit(coordinates)
         labels = db.labels_
