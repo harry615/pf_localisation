@@ -51,6 +51,8 @@ class PFLocaliser(PFLocaliserBase):
                 if math.isnan(laser_scan[i]):
                     laser_scan[i] = scan.range_max
 
+            scan.ranges = laser_scan
+
             for particle in self.particlecloud.poses:
                 weight = self.sensor_model.get_weight(scan, particle)
                 weights.append(weight)
