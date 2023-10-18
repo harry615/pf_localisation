@@ -67,6 +67,8 @@ class PFLocaliser(PFLocaliserBase):
                 self.reinitialization()
 
             total_weight = sum(weights)
+            if total_weight == 0:
+                weights = [1 for _ in weights]
             normalized_weights = [w / total_weight for w in weights]
 
             new_particle_cloud = PoseArray()
